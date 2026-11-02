@@ -1,0 +1,68 @@
+# ======================================================================
+# E-Repository — .htaccess (Apache / LiteSpeed, umum di shared hosting)
+# ======================================================================
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    Options +FollowSymlinks
+    RewriteEngine On
+
+    # Jika diinstal di subfolder, aktifkan dan sesuaikan:
+    # RewriteBase /repository/
+
+    # ---- Paksa HTTPS (AKTIFKAN setelah SSL/HTTPS di hosting berfungsi) ----
+    # RewriteCond %{HTTPS} !=on
+    # RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Hapus trailing slash
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Tolak berkas tersembunyi (.env, .git, .htaccess, dst.)
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # Berkas/folder asli (css, js, gambar) dilayani langsung; sisanya ke front controller
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([\s\S]*)$ index.php/$1 [L,NC,QSA]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 404 index.php
+</IfModule>
+
+# Jangan pernah melayani berkas konfigurasi / cadangan / log
+<FilesMatch "(?i)\.(env|ini|log|sql|bak|old|orig|swp|sh|md|lock|dist|json)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Batas unggah (berlaku bila PHP berjalan sebagai modul Apache; untuk PHP-FPM/CGI gunakan .user.ini)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 20M
+    php_value post_max_size 24M
+    php_value max_execution_time 120
+    php_flag expose_php off
+    php_flag display_errors off
+</IfModule>
+
+# Cache aset statis (css/js/font) — URL aset sudah memakai ?v=filemtime
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 30 days"
+</IfModule>

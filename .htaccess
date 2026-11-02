@@ -1,0 +1,11 @@
+# Tolak seluruh akses HTTP langsung ke folder ini.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
+
+# CATATAN: .htaccess di root ini menolak semua akses. Dokumen root (document root)
+# domain HARUS diarahkan ke folder public/ — lihat README.md.
