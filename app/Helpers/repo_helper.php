@@ -178,3 +178,22 @@ if (! function_exists('field_error')) {
         return isset($errors[$field]) ? '<div class="invalid-feedback">' . esc($errors[$field]) . '</div>' : '';
     }
 }
+
+if (! function_exists('arr_str')) {
+    /**
+     * Ambil nilai bersarang ("search.value") dari array sebagai string aman.
+     * Mengembalikan $default bila tidak ada atau bukan nilai skalar (tahan type confusion).
+     */
+    function arr_str(array $data, string $path, string $default = ''): string
+    {
+        $cur = $data;
+        foreach (explode('.', $path) as $segment) {
+            if (! is_array($cur) || ! array_key_exists($segment, $cur)) {
+                return $default;
+            }
+            $cur = $cur[$segment];
+        }
+
+        return is_scalar($cur) ? (string) $cur : $default;
+    }
+}

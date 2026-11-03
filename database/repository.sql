@@ -49,10 +49,10 @@ CREATE TABLE `categories` (
 
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
 INSERT INTO `categories` VALUES
-(1,'Skripsi','skripsi','Skripsi, tugas akhir, dan tesis.','bi-mortarboard',1,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(2,'Akreditasi','akreditasi','Dokumen dan bukti pendukung akreditasi.','bi-patch-check',1,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(3,'Monev','monev','Monitoring dan evaluasi.','bi-clipboard-data',1,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(4,'Dokumen Penting','dokumen-penting','Dokumen penting lainnya.','bi-folder2-open',1,'2026-11-02 03:36:41','2026-11-02 03:36:41');
+(1,'Skripsi','skripsi','Skripsi, tugas akhir, dan tesis.','bi-mortarboard',1,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(2,'Akreditasi','akreditasi','Dokumen dan bukti pendukung akreditasi.','bi-patch-check',1,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(3,'Monev','monev','Monitoring dan evaluasi.','bi-clipboard-data',1,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(4,'Dokumen Penting','dokumen-penting','Dokumen penting lainnya.','bi-folder2-open',1,'2026-11-03 09:47:08','2026-11-03 09:47:08');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 DROP TABLE IF EXISTS `files`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -71,6 +71,9 @@ CREATE TABLE `files` (
   `mime_type` varchar(120) NOT NULL,
   `file_size` bigint(20) unsigned NOT NULL DEFAULT 0,
   `checksum` char(64) NOT NULL,
+  `scan_status` varchar(20) DEFAULT 'unscanned',
+  `scan_engine` varchar(80) DEFAULT NULL,
+  `scanned_at` datetime DEFAULT NULL,
   `visibility` varchar(20) NOT NULL DEFAULT 'umum',
   `uploaded_by` int(10) unsigned NOT NULL,
   `download_count` int(10) unsigned NOT NULL DEFAULT 0,
@@ -120,12 +123,13 @@ CREATE TABLE `migrations` (
   `time` int(11) NOT NULL,
   `batch` int(11) unsigned NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 /*!40000 ALTER TABLE `migrations` DISABLE KEYS */;
 INSERT INTO `migrations` VALUES
-(1,'2026-11-01-000001','App\\Database\\Migrations\\CreateRepositorySchema','default','App',1793565401,1);
+(1,'2026-11-01-000001','App\\Database\\Migrations\\CreateRepositorySchema','default','App',1793674028,1),
+(2,'2026-11-02-000002','App\\Database\\Migrations\\AddScanColumnsToFiles','default','App',1793674028,1);
 /*!40000 ALTER TABLE `migrations` ENABLE KEYS */;
 DROP TABLE IF EXISTS `permissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -218,10 +222,10 @@ CREATE TABLE `roles` (
 
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */;
 INSERT INTO `roles` VALUES
-(1,'Super Admin','superadmin','Akses penuh ke seluruh fitur, termasuk peran & hak akses.',1,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(2,'Admin','admin','Mengelola berkas, kategori, pengguna, dan melihat log.',0,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(3,'Operator','operator','Mengunggah dan mengelola berkas miliknya sendiri.',0,'2026-11-02 03:36:41','2026-11-02 03:36:41'),
-(4,'Pengguna','pengguna','Hanya dapat melihat dan mengunduh berkas umum.',0,'2026-11-02 03:36:41','2026-11-02 03:36:41');
+(1,'Super Admin','superadmin','Akses penuh ke seluruh fitur, termasuk peran & hak akses.',1,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(2,'Admin','admin','Mengelola berkas, kategori, pengguna, dan melihat log.',0,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(3,'Operator','operator','Mengunggah dan mengelola berkas miliknya sendiri.',0,'2026-11-03 09:47:08','2026-11-03 09:47:08'),
+(4,'Pengguna','pengguna','Hanya dapat melihat dan mengunduh berkas umum.',0,'2026-11-03 09:47:08','2026-11-03 09:47:08');
 /*!40000 ALTER TABLE `roles` ENABLE KEYS */;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -250,7 +254,7 @@ CREATE TABLE `users` (
 
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
 INSERT INTO `users` VALUES
-(1,1,'Administrator','admin','admin@example.com','$2y$10$xabicdEo4aF5bb8RdS8MauJaYreNl2AL1PyfyjjaVNNSebLAG1.TG',1,1,NULL,NULL,NULL,'2026-11-02 03:36:41','2026-11-02 03:36:41');
+(1,1,'Administrator','admin','admin@example.com','$2y$10$Pfoylb20GLXEpanVSt..KuUlLhx4oCaho9OFXTYv.XTptuHauzAJu',1,1,NULL,NULL,NULL,'2026-11-03 09:47:08','2026-11-03 09:47:08');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

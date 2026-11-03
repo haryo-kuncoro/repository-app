@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\GuestFilter;
+use App\Filters\InputGuard;
 use App\Filters\PermissionFilter;
 use App\Filters\SecurityHeaders;
 
@@ -43,6 +44,7 @@ class Filters extends BaseFilters
         'guest'         => GuestFilter::class,
         'perm'          => PermissionFilter::class,
         'security'      => SecurityHeaders::class,
+        'inputguard'    => InputGuard::class,
     ];
 
     /**
@@ -64,6 +66,7 @@ class Filters extends BaseFilters
             'pagecache',  // Web Page Caching
         ],
         'after' => [
+            'security',    // Header keamanan: wajib di SEMUA respons (termasuk redirect/403 dari filter)
             'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
@@ -83,10 +86,9 @@ class Filters extends BaseFilters
         'before' => [
             'csrf',
             'invalidchars',
+            'inputguard',
         ],
-        'after' => [
-            'security',
-        ],
+        'after' => [],
     ];
 
     /**

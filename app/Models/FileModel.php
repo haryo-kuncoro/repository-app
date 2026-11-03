@@ -16,7 +16,7 @@ class FileModel extends Model
     protected $allowedFields    = [
         'category_id', 'title', 'description', 'author', 'doc_year', 'keywords',
         'original_name', 'stored_name', 'extension', 'mime_type', 'file_size', 'checksum',
-        'visibility', 'uploaded_by', 'download_count',
+        'visibility', 'uploaded_by', 'download_count', 'scan_status', 'scan_engine', 'scanned_at',
     ];
 
     /** Kolom yang boleh dipakai untuk pengurutan (indeks kolom DataTables => kolom SQL). */
@@ -58,7 +58,7 @@ class FileModel extends Model
         $total = $this->base($userId, $manageAll)->countAllResults();
 
         $apply = function (BaseBuilder $b) use ($q): void {
-            $search = trim((string) ($q['search']['value'] ?? ''));
+            $search = trim(arr_str($q, 'search.value'));
             if ($search !== '') {
                 $b->groupStart()
                     ->like('f.title', $search)
@@ -68,14 +68,14 @@ class FileModel extends Model
                     ->orLike('c.name', $search)
                     ->groupEnd();
             }
-            if (($cat = (int) ($q['category_id'] ?? 0)) > 0) {
+            if (($cat = (int) arr_str($q, 'category_id', '0')) > 0) {
                 $b->where('f.category_id', $cat);
             }
-            if (($year = (int) ($q['year'] ?? 0)) > 0) {
+            if (($year = (int) arr_str($q, 'year', '0')) > 0) {
                 $b->where('f.doc_year', $year);
             }
-            if (in_array($q['visibility'] ?? '', ['umum', 'terbatas'], true)) {
-                $b->where('f.visibility', $q['visibility']);
+            if (in_array(arr_str($q, 'visibility'), ['umum', 'terbatas'], true)) {
+                $b->where('f.visibility', arr_str($q, 'visibility'));
             }
         };
 
@@ -86,18 +86,18 @@ class FileModel extends Model
         $dataBuilder = $this->base($userId, $manageAll);
         $apply($dataBuilder);
 
-        $orderCol = (int) ($q['order'][0]['column'] ?? 6);
-        $orderDir = strtolower((string) ($q['order'][0]['dir'] ?? 'desc')) === 'asc' ? 'ASC' : 'DESC';
+        $orderCol = (int) arr_str($q, 'order.0.column', '6');
+        $orderDir = strtolower(arr_str($q, 'order.0.dir', 'desc')) === 'asc' ? 'ASC' : 'DESC';
         $dataBuilder->orderBy(self::ORDERABLE[$orderCol] ?? 'f.created_at', $orderDir)->orderBy('f.id', 'DESC');
 
-        $length = (int) ($q['length'] ?? 10);
+        $length = (int) arr_str($q, 'length', '10');
         $length = ($length < 1 || $length > 100) ? 10 : $length;
-        $start  = max(0, (int) ($q['start'] ?? 0));
+        $start  = max(0, (int) arr_str($q, 'start', '0'));
 
         $rows = $dataBuilder->limit($length, $start)->get()->getResultArray();
 
         return [
-            'draw'            => (int) ($q['draw'] ?? 0),
+            'draw'            => (int) arr_str($q, 'draw', '0'),
             'recordsTotal'    => $total,
             'recordsFiltered' => $filtered,
             'data'            => $rows,

@@ -26,12 +26,12 @@ class ActivityLogModel extends Model
         $total = $this->db->table('activity_logs')->countAllResults();
 
         $apply = static function ($b) use ($q): void {
-            $search = trim((string) ($q['search']['value'] ?? ''));
+            $search = trim(arr_str($q, 'search.value'));
             if ($search !== '') {
                 $b->groupStart()->like('l.username', $search)->orLike('l.description', $search)
                     ->orLike('l.ip_address', $search)->orLike('l.action', $search)->groupEnd();
             }
-            if (($action = trim((string) ($q['action'] ?? ''))) !== '') {
+            if (($action = trim(arr_str($q, 'action'))) !== '') {
                 $b->where('l.action', $action);
             }
         };
@@ -43,18 +43,18 @@ class ActivityLogModel extends Model
         $db = $this->db->table('activity_logs l')->select('l.id, l.username, l.action, l.description, l.ip_address, l.created_at');
         $apply($db);
 
-        $col = (int) ($q['order'][0]['column'] ?? 0);
-        $dir = strtolower((string) ($q['order'][0]['dir'] ?? 'desc')) === 'asc' ? 'ASC' : 'DESC';
+        $col = (int) arr_str($q, 'order.0.column', '0');
+        $dir = strtolower(arr_str($q, 'order.0.dir', 'desc')) === 'asc' ? 'ASC' : 'DESC';
         $db->orderBy(self::ORDERABLE[$col] ?? 'l.created_at', $dir)->orderBy('l.id', 'DESC');
 
-        $length = (int) ($q['length'] ?? 25);
+        $length = (int) arr_str($q, 'length', '25');
         $length = ($length < 1 || $length > 100) ? 25 : $length;
 
         return [
-            'draw'            => (int) ($q['draw'] ?? 0),
+            'draw'            => (int) arr_str($q, 'draw', '0'),
             'recordsTotal'    => $total,
             'recordsFiltered' => $filtered,
-            'data'            => $db->limit($length, max(0, (int) ($q['start'] ?? 0)))->get()->getResultArray(),
+            'data'            => $db->limit($length, max(0, (int) arr_str($q, 'start', '0')))->get()->getResultArray(),
         ];
     }
 

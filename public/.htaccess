@@ -37,6 +37,16 @@ ServerSignature Off
     ErrorDocument 404 index.php
 </IfModule>
 
+# Header keamanan untuk aset statis (css/js/font/gambar) yang dilayani Apache langsung, tanpa PHP.
+# Respons dari aplikasi (HTML, JSON, unduhan, error 404) sudah diberi header lengkap oleh aplikasi.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff2?|ico|png|jpe?g|gif|svg)$">
+        Header set X-Content-Type-Options "nosniff"
+        Header set Cross-Origin-Resource-Policy "same-origin"
+    </FilesMatch>
+    Header always unset X-Powered-By
+</IfModule>
+
 # Jangan pernah melayani berkas konfigurasi / cadangan / log
 <FilesMatch "(?i)\.(env|ini|log|sql|bak|old|orig|swp|sh|md|lock|dist|json)$">
     <IfModule mod_authz_core.c>

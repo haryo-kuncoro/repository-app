@@ -86,7 +86,8 @@ class Uploader
         if ($ext === '' || ! in_array($ext, $this->cfg->allowedExtensions, true) || ! isset(self::MIME[$ext])) {
             return $this->fail('Jenis berkas tidak diizinkan. Diizinkan: ' . strtoupper(implode(', ', $this->cfg->allowedExtensions)) . '.');
         }
-        foreach (explode('.', strtolower($original)) as $segment) {
+        // Hanya segmen SETELAH titik pertama (ekstensi) yang diperiksa; nama dasar "js.pdf" / "exe.zip" sah.
+        foreach (array_slice(explode('.', strtolower($original)), 1) as $segment) {
             if (in_array($segment, self::DANGEROUS, true)) {
                 return $this->fail('Nama berkas mengandung ekstensi yang tidak diizinkan.');
             }
@@ -99,6 +100,14 @@ class Uploader
         }
         if (! $this->signatureOk($ext, $tmp)) {
             return $this->fail('Isi berkas tidak valid atau rusak.');
+        }
+
+        // Pemindaian virus/malware sebelum berkas disimpan permanen.
+        $scan = (new VirusScanner($this->cfg))->scan($tmp, $ext);
+        if (! $scan['ok']) {
+            log_activity('virus_blocked', 'Unggahan ditolak [' . ($scan['signature'] ?? $scan['status']) . ']: ' . $original);
+
+            return $this->fail($scan['message']);
         }
 
         $dir = self::baseDir() . DIRECTORY_SEPARATOR . date('Y') . DIRECTORY_SEPARATOR . date('m');
@@ -127,6 +136,9 @@ class Uploader
                 'mime_type'     => $mime,
                 'file_size'     => (int) filesize($full),
                 'checksum'      => hash_file('sha256', $full),
+                'scan_status'   => $scan['status'],
+                'scan_engine'   => mb_substr($scan['engine'], 0, 80),
+                'scanned_at'    => date('Y-m-d H:i:s'),
             ],
         ];
     }

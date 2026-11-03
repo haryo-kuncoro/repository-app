@@ -71,6 +71,47 @@ class Repository extends BaseConfig
         'odt', 'ods', 'odp', 'txt', 'csv', 'zip', 'jpg', 'jpeg', 'png',
     ];
 
+    // ------------------------------------------------------------------
+    // Pemindai virus / malware untuk setiap unggahan
+    //   auto    : ClamAV bila terdeteksi + pemindai heuristik bawaan (disarankan)
+    //   clamav  : ClamAV WAJIB; unggahan DITOLAK bila ClamAV tidak tersedia
+    //   builtin : hanya pemindai heuristik bawaan PHP
+    //   off     : tanpa pemindaian (tidak disarankan)
+    // ------------------------------------------------------------------
+    public string $scanMode = 'auto';
+
+    /** Path socket clamd (kosong = auto-deteksi lokasi umum). */
+    public string $clamdSocket = '';
+
+    /** Host clamd via TCP, mis. 127.0.0.1 atau server ClamAV khusus (kosong = tidak dipakai). */
+    public string $clamdHost = '';
+    public int $clamdPort    = 3310;
+
+    /** Path biner clamscan (kosong = auto-deteksi). Berat: memuat database virus tiap pemindaian. */
+    public string $clamscanPath = '';
+
+    /** Folder database signature kustom untuk clamscan (opsional, opsi -d). */
+    public string $clamDatabaseDir = '';
+
+    /** Batas waktu pemindaian ClamAV (detik). */
+    public int $scanTimeout = 60;
+
+    /** Tolak dokumen Office/ODF yang berisi makro (VBA/Basic). */
+    public bool $scanBlockMacros = true;
+
+    /** Tolak PDF yang memuat JavaScript / Launch / berkas tertanam. */
+    public bool $scanBlockActivePdf = true;
+
+    /** Tolak arsip ZIP terenkripsi (isinya tidak dapat dipindai). */
+    public bool $scanBlockEncryptedArchives = true;
+
+    /** Ekstensi yang tidak boleh ada di dalam arsip (zip/docx/dst.). */
+    public array $scanBlockedInArchive = [
+        'exe', 'dll', 'scr', 'bat', 'cmd', 'com', 'msi', 'vbs', 'vbe', 'jse', 'wsf', 'wsh', 'hta',
+        'cpl', 'pif', 'lnk', 'jar', 'ps1', 'reg', 'sh', 'asp', 'aspx', 'jsp',
+        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phar',
+    ];
+
     /** Pilihan visibilitas berkas. */
     public array $visibilities = [
         'umum'     => 'Umum (semua pengguna yang berhak melihat berkas)',

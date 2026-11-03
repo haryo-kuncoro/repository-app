@@ -17,22 +17,9 @@ class SecurityHeaders implements FilterInterface
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        $response->setHeader('X-Content-Type-Options', 'nosniff');
-        $response->setHeader('X-Frame-Options', 'DENY');
-        $response->setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
-        $response->setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-        $response->setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+        self::apply($response, $request instanceof \CodeIgniter\HTTP\IncomingRequest && $request->isSecure());
 
-        if ($request instanceof \CodeIgniter\HTTP\IncomingRequest && $request->isSecure()) {
-            $response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-        }
-
-        if (! $response->hasHeader('Content-Security-Policy')) {
-            $response->setHeader('Content-Security-Policy', $this->csp());
-        }
-
-        // Halaman HTML (berisi data internal) tidak boleh di-cache browser / proxy.
+        // Halaman HTML/JSON (berisi data internal) tidak boleh di-cache browser / proxy.
         $type = $response->getHeaderLine('Content-Type');
         if ($type === '' || str_contains($type, 'text/html') || str_contains($type, 'application/json')) {
             if (! $response->hasHeader('Cache-Control')) {
@@ -44,7 +31,29 @@ class SecurityHeaders implements FilterInterface
         return $response;
     }
 
-    private function csp(): string
+    /**
+     * Pasang header keamanan baku. Dipanggil dari filter (semua respons normal) dan dari
+     * event pre_system (agar halaman error 404/500 buatan framework juga terlindungi).
+     */
+    public static function apply(ResponseInterface $response, bool $secure): void
+    {
+        $response->setHeader('X-Content-Type-Options', 'nosniff');
+        $response->setHeader('X-Frame-Options', 'DENY');
+        $response->setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+        $response->setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        $response->setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+        $response->setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+
+        if ($secure) {
+            $response->setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
+        if (! $response->hasHeader('Content-Security-Policy')) {
+            $response->setHeader('Content-Security-Policy', self::csp());
+        }
+    }
+
+    private static function csp(): string
     {
         $directives = [
             'default-src'     => ["'self'"],

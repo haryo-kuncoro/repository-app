@@ -24,6 +24,9 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 Events::on('pre_system', static function (): void {
+    // Header keamanan baku untuk SEMUA respons, termasuk halaman error buatan framework.
+    \App\Filters\SecurityHeaders::apply(service('response'), ! empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off');
+
     if (ENVIRONMENT !== 'testing') {
         $value = ini_get('zlib.output_compression');
 

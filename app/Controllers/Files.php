@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\Uploader;
+use App\Libraries\VirusScanner;
 use App\Models\CategoryModel;
 use App\Models\FileModel;
 
@@ -87,6 +88,7 @@ class Files extends BaseController
         return view('files/form', [
             'f'          => null,
             'categories' => (new CategoryModel())->active(),
+            'scanner'    => (new VirusScanner())->describe(),
         ]);
     }
 
@@ -133,6 +135,7 @@ class Files extends BaseController
         return view('files/form', [
             'f'          => $file,
             'categories' => (new CategoryModel())->active(),
+            'scanner'    => (new VirusScanner())->describe(),
         ]);
     }
 
@@ -227,11 +230,44 @@ class Files extends BaseController
     }
 
     // ------------------------------------------------------------------
+    // Pindai ulang (signature antivirus selalu diperbarui)
+    // ------------------------------------------------------------------
+    public function rescan(int $id)
+    {
+        $file = $this->files->detail($id) ?? $this->notFound();
+        $path = $this->uploader->path($file['stored_name']);
+        if ($path === null) {
+            return $this->flash('files/' . $id, 'error', 'Berkas fisik tidak ditemukan di server.');
+        }
+
+        $r = (new VirusScanner())->scan($path, (string) $file['extension']);
+        if ($r['engine_down']) {
+            return $this->flash('files/' . $id, 'warning', 'Pemindai tidak dapat dipakai saat ini: ' . $r['message']);
+        }
+
+        $this->files->update($id, [
+            'scan_status' => $r['status'],
+            'scan_engine' => mb_substr($r['engine'], 0, 80),
+            'scanned_at'  => date('Y-m-d H:i:s'),
+        ]);
+        log_activity('file_rescan', 'Pindai ulang berkas #' . $id . ' "' . $file['title'] . '": ' . $r['status'] . ($r['signature'] ? ' [' . $r['signature'] . ']' : ''));
+
+        if (! $r['ok']) {
+            return $this->flash('files/' . $id, 'error', 'PERINGATAN: ' . $r['message'] . ' Berkas diblokir dari unduhan.');
+        }
+
+        return $this->flash('files/' . $id, 'success', 'Berkas bersih (' . $r['engine'] . ').');
+    }
+
+    // ------------------------------------------------------------------
     // Unduh / pratinjau (selalu lewat controller: login + hak akses)
     // ------------------------------------------------------------------
     public function download(int $id)
     {
         $file = $this->accessible($id);
+        if ($this->quarantined($file)) {
+            return $this->flash('files/' . $id, 'error', 'Berkas ini ditandai berbahaya oleh pemindai dan diblokir. Hubungi administrator.');
+        }
         $path = $this->uploader->path($file['stored_name']);
         if ($path === null) {
             log_message('error', 'Berkas fisik hilang untuk id ' . $id);
@@ -250,6 +286,9 @@ class Files extends BaseController
     public function preview(int $id)
     {
         $file = $this->accessible($id);
+        if ($this->quarantined($file)) {
+            return $this->flash('files/' . $id, 'error', 'Berkas ini ditandai berbahaya oleh pemindai dan diblokir. Hubungi administrator.');
+        }
         if (! in_array($file['extension'], ['pdf', 'jpg', 'jpeg', 'png'], true)) {
             return $this->flash('files/' . $id, 'warning', 'Pratinjau hanya tersedia untuk PDF dan gambar.');
         }
@@ -286,6 +325,12 @@ class Files extends BaseController
         }
 
         return $file;
+    }
+
+    /** Berkas yang ditandai infected/blocked oleh pemindai tidak boleh diunduh siapa pun. */
+    private function quarantined(array $file): bool
+    {
+        return in_array($file['scan_status'] ?? 'unscanned', ['infected', 'blocked'], true);
     }
 
     private function canModify(array $file, string $permission): bool
@@ -350,7 +395,11 @@ class Files extends BaseController
     {
         $base = trim(preg_replace('/[^\p{L}\p{N}\s._()-]+/u', '', (string) $file['title']) ?? '');
         $base = mb_substr($base !== '' ? $base : 'berkas', 0, 120);
+        $ext  = '.' . $file['extension'];
+        if (strcasecmp(mb_substr($base, -mb_strlen($ext)), $ext) === 0) {
+            $base = mb_substr($base, 0, mb_strlen($base) - mb_strlen($ext)); // hindari "x.pdf.pdf"
+        }
 
-        return $base . '.' . $file['extension'];
+        return $base . $ext;
     }
 }

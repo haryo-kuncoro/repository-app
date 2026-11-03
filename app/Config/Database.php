@@ -33,7 +33,7 @@ class Database extends Config
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
         'pConnect'     => false,
-        'DBDebug'      => true,
+        'DBDebug'      => (ENVIRONMENT !== 'production'), // jangan bocorkan error SQL di produksi
         'charset'      => 'utf8mb4',
         'DBCollat'     => 'utf8mb4_unicode_ci',
         'swapPre'      => '',

@@ -41,6 +41,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     $routes->post('files/(:num)/delete', 'Files::delete/$1', ['filter' => 'perm:files.delete,files.manage_all']);
     $routes->post('files/(:num)/restore', 'Files::restore/$1', ['filter' => 'perm:files.manage_all']);
     $routes->post('files/(:num)/purge', 'Files::purge/$1', ['filter' => 'perm:files.manage_all']);
+    $routes->post('files/(:num)/rescan', 'Files::rescan/$1', ['filter' => 'perm:files.manage_all']);
 
     // Kategori
     $routes->get('categories', 'Categories::index', ['filter' => 'perm:categories.manage']);

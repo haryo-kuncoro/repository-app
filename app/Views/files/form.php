@@ -34,6 +34,12 @@ $val  = static fn (string $k, $d = '') => old_value($k, $edit ? ($f[$k] ?? $d) :
                 <?php if ($edit): ?><div class="small text-muted mb-2">Saat ini: <strong><?= esc($f['original_name']) ?></strong> (<?= esc(format_bytes($f['file_size'])) ?>). Kosongkan bila tidak ingin mengganti.</div><?php endif; ?>
                 <input class="form-control<?= has_error('file') ?>" type="file" name="file" <?= $edit ? '' : 'required' ?> data-max-bytes="<?= (int) $cfg->maxUploadKb * 1024 ?>" data-max-label="<?= esc(format_bytes($cfg->maxUploadKb * 1024), 'attr') ?>" accept=".<?= esc(implode(',.', $cfg->allowedExtensions), 'attr') ?>">
                 <?= field_error('file') ?>
+                <?php if (! empty($scanner)): ?>
+                    <div class="alert alert-<?= $scanner['warning'] ? 'warning' : 'success' ?> py-2 px-3 small mt-3 mb-0">
+                        <i class="bi bi-shield-check me-1"></i><strong>Dipindai otomatis:</strong> <?= esc($scanner['label']) ?>
+                        <?php if ($scanner['warning']): ?><div class="mt-1"><?= esc($scanner['warning']) ?></div><?php endif; ?>
+                    </div>
+                <?php endif; ?>
                 <div class="form-text">Maks. <?= esc(format_bytes($cfg->maxUploadKb * 1024)) ?>. Format: <?= esc(strtoupper(implode(', ', $cfg->allowedExtensions))) ?>.</div>
             </div></div>
             <div class="card mb-3"><div class="card-header">Visibilitas</div><div class="card-body">

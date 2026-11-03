@@ -56,6 +56,13 @@ class Cookie extends BaseConfig
      */
     public bool $secure = false;
 
+    public function __construct()
+    {
+        // Cookie otomatis 'Secure' bila diakses lewat HTTPS; .env (cookie.secure) tetap bisa menimpa.
+        $this->secure = ! empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off';
+        parent::__construct();
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Cookie HTTPOnly

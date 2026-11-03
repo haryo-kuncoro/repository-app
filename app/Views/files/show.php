@@ -27,8 +27,20 @@ if ($canEdit) { $actions .= '<a class="btn btn-outline-secondary" href="' . site
             <dt>Diunggah oleh</dt><dd><?= esc($f['uploader_name']) ?></dd>
             <dt>Tanggal unggah</dt><dd><?= esc($f['created_at']) ?></dd>
             <dt>Diunduh</dt><dd><?= (int) $f['download_count'] ?> kali</dd>
+            <dt>Pemindaian virus</dt><dd><?php
+                $ss = $f['scan_status'] ?? 'unscanned';
+                if ($ss === 'clean') { echo '<span class="badge bg-success-subtle text-success-emphasis"><i class="bi bi-shield-check"></i> Bersih</span>'; }
+                elseif ($ss === 'infected') { echo '<span class="badge bg-danger"><i class="bi bi-bug"></i> Terinfeksi</span>'; }
+                elseif ($ss === 'blocked') { echo '<span class="badge bg-danger"><i class="bi bi-shield-exclamation"></i> Diblokir</span>'; }
+                else { echo '<span class="badge badge-soft-gray">Belum dipindai</span>'; }
+            ?><?php if (! empty($f['scan_engine'])): ?><div class="small text-muted mt-1"><?= esc($f['scan_engine']) ?> · <?= esc($f['scanned_at']) ?></div><?php endif; ?></dd>
             <dt>Checksum SHA-256</dt><dd class="small font-monospace"><?= esc($f['checksum']) ?></dd>
         </dl></div></div>
+        <?php if (can('files.manage_all')): ?>
+        <form class="mb-2" method="post" action="<?= site_url('files/' . (int) $f['id'] . '/rescan') ?>" data-once>
+            <?= csrf_field() ?><button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-shield-check me-1"></i>Pindai Ulang</button>
+        </form>
+        <?php endif; ?>
         <?php if ($canDelete): ?>
         <form method="post" action="<?= site_url('files/' . (int) $f['id'] . '/delete') ?>" data-confirm="“<?= esc($f['title'], 'attr') ?>” akan dipindahkan ke tempat sampah." data-confirm-title="Hapus berkas?" data-confirm-button="Ya, hapus">
             <?= csrf_field() ?><button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-trash me-1"></i>Pindahkan ke Tempat Sampah</button>
