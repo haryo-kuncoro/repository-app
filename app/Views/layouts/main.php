@@ -16,6 +16,7 @@ $admin = [
     ['users', 'Pengguna', 'bi-people', 'users.manage'],
     ['roles', 'Peran & Hak Akses', 'bi-shield-lock', 'roles.manage'],
     ['logs', 'Log Aktivitas', 'bi-clock-history', 'logs.view'],
+    ['backups', 'Backup & Pulihkan', 'bi-database-down', 'backup.manage,backup.restore'],
 ];
 ?>
 <!DOCTYPE html>
@@ -46,12 +47,12 @@ $admin = [
         </a>
         <nav class="nav flex-column">
             <div class="nav-caption">Menu</div>
-            <?php foreach ($nav as [$uri, $label, $icon, $perm]): if (! can($perm)) { continue; } ?>
+            <?php foreach ($nav as [$uri, $label, $icon, $perm]): if (! can(...explode(",", $perm))) { continue; } ?>
                 <?php $isActive = $uri === 'files' ? ($current === 'files' || (str_starts_with($current, 'files/') && ! str_starts_with($current, 'files/create') && ! str_starts_with($current, 'files/trash'))) : ($current === $uri); ?>
                 <a class="nav-link<?= $isActive ? ' active' : '' ?>" href="<?= site_url($uri) ?>"><i class="bi <?= esc($icon, 'attr') ?>"></i><?= esc($label) ?></a>
             <?php endforeach; ?>
 
-            <?php $adminItems = array_filter($admin, static fn ($i) => can($i[3])); ?>
+            <?php $adminItems = array_filter($admin, static fn ($i) => can(...explode(",", $i[3]))); ?>
             <?php if ($adminItems !== []): ?>
                 <div class="nav-caption">Administrasi</div>
                 <?php foreach ($adminItems as [$uri, $label, $icon, $perm]): ?>

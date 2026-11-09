@@ -20,6 +20,18 @@ class Repository extends BaseConfig
     public string $appName     = 'E-Repository';
     public string $institution = 'Nama Institusi Anda';
 
+    /** Versi aplikasi (dicatat di backup; backup dari versi lebih baru ditolak). */
+    public string $appVersion = '1.2.0';
+
+    // ------------------------------------------------------------------
+    // Backup & pemulihan
+    // ------------------------------------------------------------------
+    /** Jumlah backup otomatis (php spark repository:backup) yang disimpan; yang lebih lama dihapus. */
+    public int $backupKeepAuto = 7;
+    /** Batas jumlah entri dan total ukuran isi ZIP saat memulihkan (perlindungan zip-bomb). */
+    public int $backupMaxEntries = 200000;
+    public int $backupMaxTotalMb = 51200;
+
     /** Password awal akun admin dari seeder / SQL. WAJIB diganti saat login pertama. */
     public string $defaultAdminPassword = 'Admin@Repo2026!';
 

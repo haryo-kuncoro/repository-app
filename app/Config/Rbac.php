@@ -30,6 +30,8 @@ class Rbac extends BaseConfig
         'users.manage'     => ['Mengelola pengguna', 'Administrasi'],
         'roles.manage'     => ['Mengelola peran & hak akses', 'Administrasi'],
         'logs.view'        => ['Melihat log aktivitas', 'Administrasi'],
+        'backup.manage'    => ['Membuat, mengunduh, mengunggah & menghapus backup (berisi seluruh data & berkas — sangat sensitif)', 'Administrasi'],
+        'backup.restore'   => ['Memulihkan data dari backup (MENGGANTI seluruh database & berkas)', 'Administrasi'],
     ];
 
     /**

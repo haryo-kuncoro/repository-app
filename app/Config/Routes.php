@@ -67,4 +67,13 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     // Log aktivitas
     $routes->get('logs', 'Logs::index', ['filter' => 'perm:logs.view']);
     $routes->get('logs/data', 'Logs::data', ['filter' => 'perm:logs.view']);
+
+    // Backup & pemulihan
+    $routes->get('backups', 'Backups::index', ['filter' => 'perm:backup.manage,backup.restore']);
+    $routes->post('backups/create', 'Backups::create', ['filter' => 'perm:backup.manage']);
+    $routes->post('backups/upload', 'Backups::upload', ['filter' => 'perm:backup.manage']);
+    $routes->post('backups/scan', 'Backups::scan', ['filter' => 'perm:backup.manage']);
+    $routes->get('backups/download/(:segment)', 'Backups::download/$1', ['filter' => 'perm:backup.manage']);
+    $routes->post('backups/delete/(:segment)', 'Backups::delete/$1', ['filter' => 'perm:backup.manage']);
+    $routes->post('backups/restore/(:segment)', 'Backups::restore/$1', ['filter' => 'perm:backup.restore']);
 });
